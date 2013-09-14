@@ -35,12 +35,19 @@ module Stackoverflow
     # @see https://api.stackexchange.com/docs/users
 
     def users(query, options = {})
-      options ||= {}
-      options[:site] = 'stackoverflow'
+      options = default_options.merge(options || {})
       options[:inname] = query
 
       response = self.class.get '/users', query: options
       response['items']
+    end
+
+    def default_options
+      {
+        site: 'stackoverflow',
+        key: Stackoverflow.oauth_key,
+        access_token: access_token
+      }
     end
   end
 end
