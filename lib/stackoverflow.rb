@@ -1,4 +1,5 @@
 require "stackoverflow/version"
+require "stackoverflow/errors"
 require "httparty"
 
 module Stackoverflow
@@ -39,6 +40,8 @@ module Stackoverflow
       options[:inname] = query
 
       response = self.class.get '/users', query: options
+      validate_response(response)
+
       response['items']
     end
 
@@ -48,6 +51,23 @@ module Stackoverflow
         key: Stackoverflow.oauth_key,
         access_token: access_token
       }
+    end
+
+    def validate_response(response)
+      return if response.code == 200
+
+      message = response['error_message']
+      id      = response['error_id']
+      name    = response['error_name']
+
+      case response['error_name']
+      when 'throttle_violation'
+        # It's a pity StackExchange API is not intended for non-human clients
+        backoff = /available in (\d+) seconds/.match(message)[1].to_i
+        raise Errors::ThrottleViolation.new(message, id: id, name: name, backoff: backoff)
+      else
+        raise Errors::Error.new(message, id: id, name: name)
+      end
     end
   end
 end
