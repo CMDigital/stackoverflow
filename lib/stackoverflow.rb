@@ -45,6 +45,98 @@ module Stackoverflow
       response['items']
     end
 
+    # Get the users identified by ids
+    #
+    # @param users_ids [Array] Ids of the users.
+    # @param options [Hash] Hash containing request options.
+    # @option options [Integer] :page
+    # @option options [Integer] :pagesize
+    # @option options [Timestamp] :fromdate
+    # @option options [Timestamp] :todate
+    # @option options [String] :order
+    # @option options [Integer] :min
+    # @option options [Integer] :max
+    # @option options [String] :sort
+    # https://api.stackexchange.com/docs/users-by-ids
+
+    def users_by_ids(users_ids, options = {})
+      ids = users_ids.join(';')
+      options = default_options.merge(options || {})
+
+      response = self.class.get "/users/#{ids}", query: options
+      validate_response(response)
+
+      response['items']
+    end
+
+    # Search for any questions which fit the given criteria
+    #
+    # @param options [Hash] Hash containing request options.
+    # @option options [Integer] :page
+    # @option options [Integer] :pagesize
+    # @option options [Timestamp] :fromdate
+    # @option options [Timestamp] :todate
+    # @option options [String] :order
+    # @option options [Integer] :min
+    # @option options [Integer] :max
+    # @option options [String] :sort
+    # @option options [String] :q
+    # @option options [Boolean] :accepted
+    # @option options [Integer] :answers
+    # @option options [String] :body
+    # @option options [Boolean] :closed
+    # @option options [Boolean] :migrated
+    # @option options [Boolean] :notice
+    # @option options [Array] :nottagged
+    # @option options [Array] :tagged
+    # @option options [String] :title
+    # @option options [Integer] :user
+    # @option options [String] :url
+    # @option options [Integer] :views
+    # @option options [Boolean] :wiki
+    # @see https://api.stackexchange.com/docs/advanced-search
+
+    def advanced_search(options)
+      options = default_options.merge(options || {})
+
+      if options[:tagged] && options[:tagged].is_a?(Array)
+        options[:tagged] = options[:tagged].join(';')
+      end
+
+      if options[:nottagged] && options[:nottagged].is_a?(Array)
+        options[:nottagged] = options[:nottagged].join(';')
+      end
+
+      response = self.class.get '/search/advanced', query: options
+      validate_response(response)
+
+      response['items']
+    end
+
+    # Get the answers to a set of questions identified by ids
+    #
+    # @param questions_ids [Array] Ids of the questions.
+    # @param options [Hash] Hash containing request options.
+    # @option options [Integer] :page
+    # @option options [Integer] :pagesize
+    # @option options [Timestamp] :fromdate
+    # @option options [Timestamp] :todate
+    # @option options [String] :order
+    # @option options [Integer] :min
+    # @option options [Integer] :max
+    # @option options [String] :sort
+    # @see https://api.stackexchange.com/docs/answers-on-questions
+
+    def questions_answers(questions_ids, options = {})
+      options = default_options.merge(options || {})
+      ids = questions_ids.join(';')
+
+      response = self.class.get  "/questions/#{ids}/answers", query: options
+      validate_response(response)
+
+      response['items']
+    end
+
     def default_options
       {
         site: 'stackoverflow',
