@@ -21,9 +21,8 @@ module Stackoverflow
       @access_token = access_token
     end
 
-    # Lookup users by name
+    # Common options
     #
-    # @param query [String] Name or part of the name of the user to look for.
     # @param options [Hash] Hash containing request options.
     # @option options [Integer] :page
     # @option options [Integer] :pagesize
@@ -33,6 +32,11 @@ module Stackoverflow
     # @option options [Integer] :min
     # @option options [Integer] :max
     # @option options [String] :sort
+
+    # Lookup users by name
+    #
+    # @param query [String] Name or part of the name of the user to look for.
+    # @param options [Hash] Hash containing request options.
     # @see https://api.stackexchange.com/docs/users
 
     def users(query, options = {})
@@ -49,14 +53,6 @@ module Stackoverflow
     #
     # @param users_ids [Array] Ids of the users.
     # @param options [Hash] Hash containing request options.
-    # @option options [Integer] :page
-    # @option options [Integer] :pagesize
-    # @option options [Timestamp] :fromdate
-    # @option options [Timestamp] :todate
-    # @option options [String] :order
-    # @option options [Integer] :min
-    # @option options [Integer] :max
-    # @option options [String] :sort
     # https://api.stackexchange.com/docs/users-by-ids
 
     def users_by_ids(users_ids, options = {})
@@ -69,17 +65,25 @@ module Stackoverflow
       response['items']
     end
 
+    # Returns the tags the users identified in ids have been active in.
+    #
+    # @param users_ids [Array] Ids of the users.
+    # @param options [Hash] Hash containing request options.
+    # @see https://api.stackexchange.com/docs/tags-on-users
+
+    def users_tags(users_ids, options = {})
+      ids = users_ids.join(';')
+      options = default_options.merge(options || {})
+
+      response = self.class.get "/users/#{ids}/tags", query: options
+      validate_response(response)
+
+      response['items']
+    end
+
     # Search for any questions which fit the given criteria
     #
     # @param options [Hash] Hash containing request options.
-    # @option options [Integer] :page
-    # @option options [Integer] :pagesize
-    # @option options [Timestamp] :fromdate
-    # @option options [Timestamp] :todate
-    # @option options [String] :order
-    # @option options [Integer] :min
-    # @option options [Integer] :max
-    # @option options [String] :sort
     # @option options [String] :q
     # @option options [Boolean] :accepted
     # @option options [Integer] :answers
