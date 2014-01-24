@@ -1,6 +1,7 @@
 require "stackoverflow/version"
 require "stackoverflow/errors"
 require "httparty"
+require "active_support/core_ext/array/extract_options"
 
 module Stackoverflow
   class << self
@@ -40,13 +41,10 @@ module Stackoverflow
     # @see https://api.stackexchange.com/docs/users
 
     def users(query, options = {})
-      options = default_options.merge(options || {})
+      options ||= {}
       options[:inname] = query
 
-      response = self.class.get '/users', query: options
-      validate_response(response)
-
-      response['items']
+      get "users", normalize_options(options)
     end
 
     # Get the users identified by ids
@@ -56,13 +54,7 @@ module Stackoverflow
     # https://api.stackexchange.com/docs/users-by-ids
 
     def users_by_ids(users_ids, options = {})
-      ids = users_ids.join(';')
-      options = default_options.merge(options || {})
-
-      response = self.class.get "/users/#{ids}", query: options
-      validate_response(response)
-
-      response['items']
+      get "users", users_ids, normalize_options(options)
     end
 
     # Returns the tags the users identified in ids have been active in.
@@ -72,13 +64,7 @@ module Stackoverflow
     # @see https://api.stackexchange.com/docs/tags-on-users
 
     def users_tags(users_ids, options = {})
-      ids = users_ids.join(';')
-      options = default_options.merge(options || {})
-
-      response = self.class.get "/users/#{ids}/tags", query: options
-      validate_response(response)
-
-      response['items']
+      get "users", users_ids, "tags", normalize_options(options)
     end
 
     # Search for any questions which fit the given criteria
@@ -101,7 +87,7 @@ module Stackoverflow
     # @see https://api.stackexchange.com/docs/advanced-search
 
     def advanced_search(options)
-      options = default_options.merge(options || {})
+      options ||= {}
 
       if options[:tagged] && options[:tagged].is_a?(Array)
         options[:tagged] = options[:tagged].join(';')
@@ -111,10 +97,7 @@ module Stackoverflow
         options[:nottagged] = options[:nottagged].join(';')
       end
 
-      response = self.class.get '/search/advanced', query: options
-      validate_response(response)
-
-      response['items']
+      get 'search", "advanced', normalize_options(options)
     end
 
     # Get the answers to a set of questions identified by ids
@@ -132,10 +115,22 @@ module Stackoverflow
     # @see https://api.stackexchange.com/docs/answers-on-questions
 
     def questions_answers(questions_ids, options = {})
-      options = default_options.merge(options || {})
-      ids = questions_ids.join(';')
+      get "questions", questions_ids, "answers", normalize_options(options)
+    end
 
-      response = self.class.get  "/questions/#{ids}/answers", query: options
+    def get(*args)
+      options = args.extract_options!
+
+      path_components = args.map do |arg|
+        case arg
+        when Array then arg.join(';')
+        else arg.to_s
+        end
+      end
+
+      path = path_components.map {|c| "/#{c}" }.join
+
+      response = self.class.get path, query: options
       validate_response(response)
 
       response['items']
@@ -147,6 +142,10 @@ module Stackoverflow
         key: Stackoverflow.oauth_key,
         access_token: access_token
       }
+    end
+
+    def normalize_options(options)
+      default_options.merge(options || {})
     end
 
     def validate_response(response)
