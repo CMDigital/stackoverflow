@@ -2,6 +2,7 @@ require "stackoverflow/version"
 require "stackoverflow/errors"
 require "httparty"
 require "active_support/core_ext/array/extract_options"
+require "active_support/core_ext/hash/except"
 
 module Stackoverflow
   class << self
@@ -65,6 +66,18 @@ module Stackoverflow
 
     def users_tags(users_ids, options = {})
       get "users", users_ids, "tags", normalize_options(options)
+    end
+
+    def users_associated_accounts(accounts_ids, options = {})
+      get "users", accounts_ids, "associated", normalize_options(options).except(:site)
+    end
+
+    def users_top_answer_tags(user_id, options = {})
+      get "users", user_id, "top-answer-tags", normalize_options(options)
+    end
+
+    def users_top_answers(users_ids, tags, options = {})
+      get "users", users_ids, "tags", tags, "top-answers", normalize_options(options)
     end
 
     # Search for any questions which fit the given criteria
