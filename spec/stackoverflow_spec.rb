@@ -14,4 +14,10 @@ describe Stackoverflow do
       expect(profile).to include('user_id', 'account_id', 'site_name')
     end
   end
+
+  it "performs advanced question search" do
+    client.advanced_search(tagged: %w[ruby javascript]).each do |profile|
+      expect(profile).to include('owner', 'tags', 'question_id', 'is_answered')
+    end
+  end
 end

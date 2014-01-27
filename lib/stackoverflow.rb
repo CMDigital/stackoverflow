@@ -110,7 +110,7 @@ module Stackoverflow
         options[:nottagged] = options[:nottagged].join(';')
       end
 
-      get 'search", "advanced', normalize_options(options)
+      get "search", "advanced", normalize_options(options)
     end
 
     # Get the answers to a set of questions identified by ids
