@@ -80,6 +80,14 @@ module Stackoverflow
       get "users", users_ids, "tags", tags, "top-answers", normalize_options(options)
     end
 
+    def users_top_question_tags(user_id, options = {})
+      get "users", user_id, "top-question-tags", normalize_options(options)
+    end
+
+    def users_top_questions(users_ids, tags, options = {})
+      get "users", users_ids, "tags", tags, "top-questions", normalize_options(options)
+    end
+
     # Search for any questions which fit the given criteria
     #
     # @param options [Hash] Hash containing request options.
