@@ -3,6 +3,7 @@ require "stackoverflow/errors"
 require "httparty"
 require "active_support/core_ext/array/extract_options"
 require "active_support/core_ext/hash/except"
+require "cgi"
 
 module Stackoverflow
   class << self
@@ -149,7 +150,7 @@ module Stackoverflow
         end
       end
 
-      path = path_components.map {|c| "/#{c}" }.join
+      path = path_components.map {|c| "/#{CGI::escape(c)}" }.join
 
       response = self.class.get path, query: options
       validate_response(response)

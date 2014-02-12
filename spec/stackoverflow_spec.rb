@@ -20,4 +20,13 @@ describe Stackoverflow do
       expect(profile).to include('owner', 'tags', 'question_id', 'is_answered')
     end
   end
+
+  it "URL-encodes parameters" do
+    expect(Stackoverflow::Client).to receive(:get) do |path, options|
+      expect(path).to match /tags\/c%23/
+      Struct.new(:code, :items).new(200, [])
+    end
+
+    client.users_top_answers([42], ['c#'])
+  end
 end
